@@ -1,0 +1,50 @@
+import 'package:data_leak/models/data.dart';
+import 'package:data_leak/screens/home/data_detail_page.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+
+class DataList extends StatefulWidget{
+  @override
+  State<StatefulWidget> createState() => _DataListState();
+
+}
+
+class _DataListState extends State<DataList>{
+  @override
+  Widget build(BuildContext context) {
+
+    final data = Provider.of<List<Data>?>(context);
+    if (data != null) {
+      data.forEach((data) {
+        print(data.email);
+        print(data.password);
+       });
+    }
+    return GridView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: data?.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+          ),
+          itemBuilder: (BuildContext context, int index) {
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DataDetailPage(data: (data as List<Data>)[index])),
+                );
+              },
+              child: Card(
+                child: Center(
+                  child: Text((data != null && data.length > index) ? data[index].name : ''),
+                ),
+              ),
+            );
+          },
+        );
+  }
+
+}

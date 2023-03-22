@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "178434390197",
+    "project_id": "dataleakapp",
+    "storage_bucket": "dataleakapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178434390197:android:d0b1f04f3cad7ab2ace6fc",
+        "android_client_info": {
+          "package_name": "com.example.data_leak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178434390197-ol1pnrqspt5b3a1rp99kov5heitkgucq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeq4LQML4u4BecccdZqznInWMR61Oh2nM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178434390197-ol1pnrqspt5b3a1rp99kov5heitkgucq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "178434390197-qlvg6nerdnosopde201jkgr6961s3cs1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dataLeak"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178434390197:android:1e8d937fb95fc76cace6fc",
+        "android_client_info": {
+          "package_name": "io.iyalla.DataLeakApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178434390197-qfq20ajeotg4mhdmd8ec2bjo8vfsn1hu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.iyalla.DataLeakApp",
+            "certificate_hash": "875d1e19e3016f3b51e3b9a4bb5239ad75b4d458"
+          }
+        },
+        {
+          "client_id": "178434390197-ol1pnrqspt5b3a1rp99kov5heitkgucq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeq4LQML4u4BecccdZqznInWMR61Oh2nM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178434390197-ol1pnrqspt5b3a1rp99kov5heitkgucq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "178434390197-qlvg6nerdnosopde201jkgr6961s3cs1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dataLeak"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
