@@ -1,13 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
 import 'package:flutter/material.dart';
 import 'package:data_leak/models/data.dart';
-import 'package:http/http.dart' as http;
 
 class DataEntryPage extends StatefulWidget {
   const DataEntryPage({super.key});

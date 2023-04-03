@@ -4,21 +4,17 @@ import 'package:data_leak/models/user.dart';
 
 class AuthService{
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
   final useruid = FirebaseAuth.instance.currentUser!.uid;
 
-   
   UserObj _userFromFirebaseUser(User? user){
     return user != null ? UserObj(uid: user.uid) : UserObj(uid: ' ');
   }
-
 
   Stream<UserObj?>? get user {
     return _firebaseAuth.authStateChanges()
       .map((User? user)=> _userFromFirebaseUser(user));
   }
 
- 
   //register with email and password
   Future registerWithEmailAndPassword(String email, String password)async{
     try{

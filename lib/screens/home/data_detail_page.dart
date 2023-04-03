@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/screens/home/data_edit.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/password_api.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:data_leak/models/data.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +10,7 @@ import 'package:data_leak/services/database.dart';
 class DataDetailPage extends StatelessWidget {
   Data data;
   final useruid = AuthService().useruid;
-  
+  bool loading = false;
   String decryptedPassword = "null";
   String encryptedPassword = "null";
 
@@ -35,7 +32,7 @@ class DataDetailPage extends StatelessWidget {
   
   Future<String> _getPassword() async {
     encryptedPassword = data.password;
-    decryptedPassword = await PasswordApiService().encryptApiCall(encryptedPassword);
+    decryptedPassword = await PasswordApiService().decryptApiCall(encryptedPassword);
     return decryptedPassword;
   }
 
@@ -43,7 +40,7 @@ class DataDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<List<Data>?>.value(
+    return loading ? Loading(): StreamProvider<List<Data>?>.value(
       value: DatabaseService(uid: useruid).userDataStream,
       initialData: null,
         child: Scaffold(
@@ -72,7 +69,7 @@ class DataDetailPage extends StatelessWidget {
                   future: _getPassword(),
                   builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Loading(); // Show a loading indicator while waiting for the password
+                      return const CircularProgressIndicator(); // Show a loading indicator while waiting for the password
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}'); // Show the error if any occurred
                     } else {

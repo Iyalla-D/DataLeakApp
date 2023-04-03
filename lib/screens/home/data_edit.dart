@@ -1,13 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:data_leak/models/data.dart';
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class DataEditPage extends StatefulWidget {
   final Data data;
@@ -28,6 +25,7 @@ class DataEditPageState extends State<DataEditPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool loading = false;
+  bool _passwordVisible = false;
 
   final useruid = AuthService().useruid;
 
@@ -40,7 +38,14 @@ class DataEditPageState extends State<DataEditPage> {
     _nameController.text = widget.data.name;
     _urlController.text = widget.data.url;
     _emailController.text = widget.data.email;
-    _passwordController.text = widget.data.password;
+    _getDecryptedPassword();
+  }
+
+  Future<void> _getDecryptedPassword() async {
+    String decryptedPassword = await PasswordApiService().decryptApiCall(widget.data.password);
+    setState(() {
+      _passwordController.text = decryptedPassword;
+    });
   }
 
   Future<void> _updateData() async {
@@ -113,32 +118,47 @@ class DataEditPageState extends State<DataEditPage> {
                   labelText: 'Email',
                 ),
               ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                ),
+              Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_passwordVisible,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () async{
                   if (_formKey.currentState?.validate() ?? false) {
-                    // setState(() {
-                    //   loading = true;
-                    // });
+                    setState(() {
+                      loading = true;
+                    });
 
                     await _updateData();
                     
-                    // setState(() {
-                    //   loading = false;
-                    // });
+                    setState(() {
+                      loading = false;
+                    });
                   }
                   else{
                     print("error validating form: data entry");
