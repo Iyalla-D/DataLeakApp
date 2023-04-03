@@ -10,13 +10,13 @@ import 'package:provider/provider.dart';
 class HomePage extends StatefulWidget {
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   final AuthService _auth = AuthService();
   List<Data> savedData = [];
-  final useruid = FirebaseAuth.instance.currentUser!.uid;
+  final useruid = AuthService().useruid;
    
 
   void _getDataForCurrentUser() async {

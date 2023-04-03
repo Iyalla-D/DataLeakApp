@@ -1,4 +1,5 @@
 import 'package:data_leak/mutual/loading.dart';
+import 'package:data_leak/screens/authenticate/forgot_password.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:data_leak/screens/authenticate/sign_up_page.dart';
@@ -108,7 +109,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Navigate to forgot password page
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ForgottenPage()));
                   },
                   child: const Text('Forgot Password'),
                 ),

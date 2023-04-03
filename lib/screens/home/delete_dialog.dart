@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_leak/models/data.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:data_leak/services/auth.dart';
 import 'package:flutter/material.dart';
 
 
 class DeleteDialog extends StatelessWidget {
   final Data data;
-  final useruid = FirebaseAuth.instance.currentUser!.uid;
+  final useruid = AuthService().useruid;
 
-  DeleteDialog({required this.data});
+  DeleteDialog({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class DeleteDialog extends StatelessWidget {
               
               final dataCollection = FirebaseFirestore.instance.collection('data').doc(useruid).collection('user_data');
               final querySnapshot = await dataCollection
-                  .where('name', isEqualTo: data.name)
+                  .where('password', isEqualTo: data.password)
                   .get();
               final docSnapshot = querySnapshot.docs.first;
               await docSnapshot.reference.delete();

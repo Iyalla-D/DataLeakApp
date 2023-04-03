@@ -1,13 +1,43 @@
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:data_leak/mutual/loading.dart';
+import 'package:data_leak/screens/home/data_edit.dart';
+import 'package:data_leak/services/auth.dart';
+import 'package:data_leak/services/password_api.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:data_leak/models/data.dart';
 import 'package:provider/provider.dart';
 import 'package:data_leak/services/database.dart';
 
 class DataDetailPage extends StatelessWidget {
-  final Data data;
-  final useruid = FirebaseAuth.instance.currentUser!.uid;
+  Data data;
+  final useruid = AuthService().useruid;
+  
+  String decryptedPassword = "null";
+  String encryptedPassword = "null";
+
+  void _editData(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DataEditPage(
+          data: data,
+          onUpdate: (updatedData) {
+            // Update the data in the current widget and refresh the UI
+            data = updatedData;
+            (context as Element).markNeedsBuild();
+          },
+        ),
+      ),
+    );
+  }
+  
+  Future<String> _getPassword() async {
+    encryptedPassword = data.password;
+    decryptedPassword = await PasswordApiService().encryptApiCall(encryptedPassword);
+    return decryptedPassword;
+  }
 
   DataDetailPage({required this.data});
 
@@ -22,7 +52,7 @@ class DataDetailPage extends StatelessWidget {
             actions: [
                 TextButton(
                   onPressed: ()async{
-                    
+                    _editData(context);
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -38,7 +68,18 @@ class DataDetailPage extends StatelessWidget {
               children: [
                 Text('Url: ${data.url}'),
                 Text('Email: ${data.email}'),
-                Text('Password: ${data.password}'),
+                FutureBuilder<String>(
+                  future: _getPassword(),
+                  builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Loading(); // Show a loading indicator while waiting for the password
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}'); // Show the error if any occurred
+                    } else {
+                      return Text('Password: ${snapshot.data}'); // Show the password when it's available
+                    }
+                  },
+                ),
                 Text('Data Leaked: ${data.isLeaked ? 'Yes' : 'No'}'),
               ],
             ),

@@ -1,22 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:data_leak/models/data.dart';
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
 import 'package:flutter/material.dart';
-import 'package:data_leak/models/data.dart';
 import 'package:http/http.dart' as http;
 
-class DataEntryPage extends StatefulWidget {
-  const DataEntryPage({super.key});
+class DataEditPage extends StatefulWidget {
+  final Data data;
+  final Function(Data) onUpdate;
+
+  const DataEditPage({required this.data, required this.onUpdate, Key? key})
+      : super(key: key);
 
   @override
-  DataEntryPageState createState() => DataEntryPageState();
+  DataEditPageState createState() => DataEditPageState();
 }
 
-class DataEntryPageState extends State<DataEntryPage> {
+class DataEditPageState extends State<DataEditPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
@@ -28,37 +32,43 @@ class DataEntryPageState extends State<DataEntryPage> {
   final useruid = AuthService().useruid;
 
   bool isPwned = false;
-  final encryptApiUrl = 'http://192.168.197.100:8080/encrypt';
-  final pwndPassCheckUrl = 'http://192.168.197.100:8080/ispasswordpwned';
   String encryptedPassword = "null";
- 
 
-  Future<void> _addNewData() async {
-    encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
-    isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
-
-    final finalData = Data(
-        name: _nameController.text,
-        url: _urlController.text,
-        email: _emailController.text,
-        password: encryptedPassword,
-        isLeaked: isPwned,
-      );
-
-    try {
-      await DatabaseService(uid: useruid).addData(finalData);
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context, finalData);
-    } catch (e) {
-      print('Error adding data to Firestore: $e');
-    }
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.data.name;
+    _urlController.text = widget.data.url;
+    _emailController.text = widget.data.email;
+    _passwordController.text = widget.data.password;
   }
 
+  Future<void> _updateData() async {
+    encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
+    isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
+    
+    final updatedData = Data(
+      name: _nameController.text,
+      url: _urlController.text,
+      email: _emailController.text,
+      password: encryptedPassword,
+      isLeaked: isPwned,
+    );
+
+    try {
+      await DatabaseService(uid: useruid).updateData(updatedData);
+      widget.onUpdate(updatedData);
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error updating data in Firestore: $e');
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return loading ? Loading(): Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Data'),
+        title: const Text('Edit Data'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -120,15 +130,15 @@ class DataEntryPageState extends State<DataEntryPage> {
               ElevatedButton(
                 onPressed: () async{
                   if (_formKey.currentState?.validate() ?? false) {
-                    setState(() {
-                        loading = true;
-                      });
+                    // setState(() {
+                    //   loading = true;
+                    // });
 
-                    await _addNewData();
+                    await _updateData();
                     
-                    setState(() {
-                        loading = false;
-                      });
+                    // setState(() {
+                    //   loading = false;
+                    // });
                   }
                   else{
                     print("error validating form: data entry");
@@ -143,5 +153,3 @@ class DataEntryPageState extends State<DataEntryPage> {
     );
   }
 }
-
-

@@ -25,6 +25,21 @@ class DatabaseService{
     
   }   
 
+  Future updateData(Data data) async {
+    final thisdataCollection = dataCollection.doc(uid).collection('user_data');
+    final querySnapshot = await thisdataCollection
+                  .where('name', isEqualTo: data.name)
+                  .get();
+    final docSnapshot = querySnapshot.docs.first;
+    return await docSnapshot.reference.update({
+      'name': data.name,
+      'url': data.url,
+      'email': data.email,
+      'password': data.password,
+      'isLeaked': data.isLeaked,
+    });             
+  }
+
   Future initialUserData(String name,String url,String email,String password)async{
    return await dataCollection.doc(uid).collection('user_data') // sub-collection 'user_data' within the user's document
     .doc() // generate a new ID for the data
