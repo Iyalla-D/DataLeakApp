@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,38 +21,35 @@ class _DataEntryPageState extends State<DataEntryPage> {
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool isPwned = false;
-  final useruid = FirebaseAuth.instance.currentUser!.uid;
-  final encryptApiUrl = 'http://192.168.84.100:8080/encrypt';
-  final pwndPassCheckUrl = 'http://192.168.84.100:8080/ispasswordpwned';
 
+  bool loading = false;
+
+  final useruid = FirebaseAuth.instance.currentUser!.uid;
+
+  bool isPwned = false;
+  final encryptApiUrl = 'http://172.19.6.227:8080/encrypt';
+  final pwndPassCheckUrl = 'http://172.19.6.227:8080/ispasswordpwned';
+  String encryptedPassword = "null";
+ 
 
   Future<void> _addNewData() async {
-
-    final data = {
-      'name': _nameController.text,
-      'url': _urlController.text,
-      'email': _emailController.text,
-      'password': _passwordController.text,
-      'isLeaked': isPwned,
-      'master': 'my_master_password',
-    };
-
-    //Encode the data as a JSON string
-    final jsonData = json.encode(data);
-    String encryptedPassword = "null";
-
-    
 
     try{
       final response = await http.post(
         Uri.parse(encryptApiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonData,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'Obj': _passwordController.text,
+          'master': 'my_master_password',
+        }),
       );
 
       if(response.statusCode == 200){
-        encryptedPassword = response.body ;
+        encryptedPassword = response.body;
+        print(encryptedPassword);
       }
 
     }catch (e) {
@@ -65,7 +63,38 @@ class _DataEntryPageState extends State<DataEntryPage> {
       }
     }
 
-    final newData = Data(
+
+    try{
+      final response = await http.post(
+        Uri.parse(pwndPassCheckUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'Obj': encryptedPassword,
+          'master': 'my_master_password',
+        }),
+      );
+
+      if(response.statusCode == 200){
+        isPwned = response.body.toLowerCase() == "true";
+        print(response.body);
+      }
+
+    }catch (e) {
+      if (e is SocketException) {
+        // Handle the case where the server is not available
+        print('Server is not available: $e');
+      } 
+      else {
+        // Handle other exceptions
+        print('Error occurred: $e');
+      }
+    }
+
+  
+    final finalData = Data(
         name: _nameController.text,
         url: _urlController.text,
         email: _emailController.text,
@@ -73,13 +102,10 @@ class _DataEntryPageState extends State<DataEntryPage> {
         isLeaked: isPwned,
       );
 
-
-
-
     try {
-      await DatabaseService(uid: useruid).addData(newData);
+      await DatabaseService(uid: useruid).addData(finalData);
       // ignore: use_build_context_synchronously
-      Navigator.pop(context, newData);
+      Navigator.pop(context, finalData);
     } catch (e) {
       print('Error adding data to Firestore: $e');
     }
@@ -87,7 +113,7 @@ class _DataEntryPageState extends State<DataEntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading(): Scaffold(
       appBar: AppBar(
         title: const Text('Add New Data'),
       ),
@@ -151,9 +177,15 @@ class _DataEntryPageState extends State<DataEntryPage> {
               ElevatedButton(
                 onPressed: () async{
                   if (_formKey.currentState?.validate() ?? false) {
-                
-                    
+                    setState(() {
+                        loading = true;
+                      });
+
                     await _addNewData();
+                    
+                    setState(() {
+                        loading = false;
+                      });
                   }
                   else{
                     print("here");

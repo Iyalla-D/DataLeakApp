@@ -48,17 +48,7 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Data Leak Detector'),
-          actions: [
-            TextButton(
-              onPressed: ()async{
-                await _auth.signOut();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Sign Out'),
-            ),
-          ],
+        
         ),
         body: DataList() ,
         floatingActionButton: FloatingActionButton(
@@ -70,6 +60,50 @@ class _HomePageState extends State<HomePage> {
           },
           child: const Icon(Icons.add),
         ),
+
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              UserAccountsDrawerHeader(
+                //accountName: Text(FirebaseAuth.instance.currentUser!.displayName!),
+                accountEmail: Text(FirebaseAuth.instance.currentUser!.email!),
+                currentAccountPicture: const CircleAvatar(
+                  // backgroundImage: NetworkImage(
+                  //   FirebaseAuth.instance.currentUser!.photoURL!,
+                  // ),
+                ), accountName: null,
+              ),
+              ListTile(
+                title: const Text('Item 1'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Item 2'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const SizedBox(height: 450),
+              const Divider(),
+              ListTile(
+                title: const Text('Sign Out'),
+                onTap: ()async{
+                await _auth.signOut();
+                },
+              ),
+            ],
+          ),
+        ),
+
+        
+
+
+
+
+
       ),
     );
   }
