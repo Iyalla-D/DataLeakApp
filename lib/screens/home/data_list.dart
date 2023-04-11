@@ -7,6 +7,10 @@ import 'package:provider/provider.dart';
 
 
 class DataList extends StatefulWidget{
+  final String searchQuery;
+  
+  DataList({required this.searchQuery});
+
   @override
   State<StatefulWidget> createState() => _DataListState();
 
@@ -19,26 +23,26 @@ class _DataListState extends State<DataList>{
   Widget build(BuildContext context) {
     final data = Provider.of<List<Data>?>(context);
     if (data != null) {
-      data.forEach((data) {
-        //print(data.email);
-        //print(data.password);
-       });
+      data.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     }
+    final filteredData = data
+        ?.where((element) => element.name.toLowerCase().contains(widget.searchQuery.toLowerCase()))
+        .toList();
     return GridView.builder(
           padding: const EdgeInsets.all(16.0),
-          itemCount: data?.length,
+          itemCount: filteredData?.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 16.0,
             mainAxisSpacing: 16.0,
           ),
           itemBuilder: (BuildContext context, int index) {
-            final imageUrl = data != null && data.length > index ? data[index].url : '';
+            final imageUrl = filteredData != null && filteredData.length > index ? filteredData[index].url : '';
             return InkWell(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DataDetailPage(data: (data as List<Data>)[index])),
+                  MaterialPageRoute(builder: (context) => DataDetailPage(data: (filteredData as List<Data>)[index])),
                 );
               },
               onLongPress: (){
@@ -46,14 +50,16 @@ class _DataListState extends State<DataList>{
                   context: context,
                   builder: (BuildContext context) {
                     return DeleteDialog(
-                      data: (data as List<Data>)[index],
+                      data: (filteredData as List<Data>)[index],
                     );
                   },
                 );
               },
               //child image for the gridview builder
               child: imageUrl.isNotEmpty
-                ? ClipOval(
+                ? ClipRRect(
+                  //ClipOval
+                  borderRadius: BorderRadius.circular(25.0),
                   child: Image.network(
                     'https://logo.clearbit.com/https://$imageUrl?size=799',
                     fit: BoxFit.cover,

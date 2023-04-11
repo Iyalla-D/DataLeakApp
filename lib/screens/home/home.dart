@@ -8,7 +8,6 @@ import 'package:data_leak/models/data.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-
   @override
   HomePageState createState() => HomePageState();
 }
@@ -17,14 +16,12 @@ class HomePageState extends State<HomePage> {
   final AuthService _auth = AuthService();
   List<Data> savedData = [];
   final useruid = AuthService().useruid;
-   
+  String searchQuery = '';
+  bool showSearchBar = false;
+  final searchController = TextEditingController();
+
 
   void _getDataForCurrentUser() async {
-    
-    if (useruid == null) {
-      return;
-    }
-
     final snapshot = await DatabaseService(uid: useruid).getSnapshot();
     final data = snapshot.docs.map<Data>((doc) => Data.fromJson(doc.data())).toList();
 
@@ -33,7 +30,7 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-
+ 
   @override
   void initState() {
     super.initState();
@@ -47,10 +44,35 @@ class HomePageState extends State<HomePage> {
       initialData: null,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Data Leak Detector'),
-        
+          title: showSearchBar
+              ? TextField(
+                  controller: searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    hintText: 'Search',
+                  ),
+                )
+              : const Text('Data Leak Detector'),
+          actions: [
+            IconButton(
+              icon: Icon(showSearchBar ? Icons.close : Icons.search),
+              onPressed: () {
+                setState(() {
+                  showSearchBar = !showSearchBar;
+                  if (!showSearchBar) {
+                    searchController.clear();
+                    searchQuery = '';
+                  }
+                });
+              },
+            ),
+          ],
         ),
-        body: DataList() ,
+        body: DataList(searchQuery: searchQuery),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -97,12 +119,6 @@ class HomePageState extends State<HomePage> {
             ],
           ),
         ),
-
-        
-
-
-
-
 
       ),
     );

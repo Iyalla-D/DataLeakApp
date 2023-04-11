@@ -24,8 +24,6 @@ class DataEntryPageState extends State<DataEntryPage> {
   final useruid = AuthService().useruid;
 
   bool isPwned = false;
-  final encryptApiUrl = 'http://192.168.197.100:8080/encrypt';
-  final pwndPassCheckUrl = 'http://192.168.197.100:8080/ispasswordpwned';
   String encryptedPassword = "null";
  
 

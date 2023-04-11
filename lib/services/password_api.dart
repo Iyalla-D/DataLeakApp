@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 class PasswordApiService{
-  final encryptApiUrl = 'http://192.168.197.100:8080/encrypt';
-  final decryptApiUrl = 'http://192.168.197.100:8080/decrypt';
-  final pwndPassCheckUrl = 'http://192.168.197.100:8080/ispasswordpwned';
-
+  final encryptApiUrl = 'http://https://dataleak-api.herokuapp.com/encrypt';
+  final decryptApiUrl = 'http://dataleak-api.herokuapp.com/decrypt';
+  final pwndPassCheckUrl = 'http://dataleak-api.herokuapp.com/ispasswordpwned';
 
 
   Future<String> encryptApiCall(String password) async {

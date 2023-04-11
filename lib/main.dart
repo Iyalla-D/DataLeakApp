@@ -60,6 +60,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         title: 'My App',
         theme: myTheme,
+        darkTheme: ThemeData.dark(),
         home: Wrapper(),
       ),
     );
