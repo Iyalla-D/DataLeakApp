@@ -52,6 +52,8 @@ class MainApp extends StatelessWidget {
     ),
   );
 
+  
+
   @override
   Widget build(BuildContext context) {
     return StreamProvider<UserObj?>.value(
@@ -62,6 +64,7 @@ class MainApp extends StatelessWidget {
         theme: myTheme,
         darkTheme: ThemeData.dark(),
         home: Wrapper(),
+        
       ),
     );
   }

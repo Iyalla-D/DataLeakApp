@@ -19,22 +19,25 @@ class DataEntryPageState extends State<DataEntryPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  //String Domain = "";
   bool loading = false;
 
   final useruid = AuthService().useruid;
 
   bool isPwned = false;
-  String encryptedPassword = "null";
  
 
   Future<void> _addNewData() async {
-    encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
+    String encryptedemail = await PasswordApiService().encryptApiCall(_emailController.text);
+    print(encryptedemail);
+    String encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
+    print(encryptedPassword);
     isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
 
     final finalData = Data(
         name: _nameController.text,
         url: _urlController.text,
-        email: _emailController.text,
+        email: encryptedemail,
         password: encryptedPassword,
         isLeaked: isPwned,
       );
@@ -47,6 +50,17 @@ class DataEntryPageState extends State<DataEntryPage> {
       print('Error adding data to Firestore: $e');
     }
   }
+
+  String extractNameFromUrl(String url) {
+  if (url.isEmpty) {
+    return '';
+  }
+
+  final domain = url.split('.').first;
+  final domainName = domain[0].toUpperCase() + domain.substring(1);
+  print('Extracted domain name: $domainName');
+  return domainName;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -61,18 +75,7 @@ class DataEntryPageState extends State<DataEntryPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nameController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter a name for the data';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                ),
-              ),
+              
               TextFormField(
                 controller: _urlController,
                 validator: (value) {
@@ -84,6 +87,10 @@ class DataEntryPageState extends State<DataEntryPage> {
                 decoration: const InputDecoration(
                   labelText: 'Url',
                 ),
+                onChanged: (value) {
+                  _nameController.text = extractNameFromUrl(_urlController.text);
+                  print(_nameController.text);
+                },
               ),
               TextFormField(
                 controller: _emailController,
@@ -137,5 +144,3 @@ class DataEntryPageState extends State<DataEntryPage> {
     );
   }
 }
-
-

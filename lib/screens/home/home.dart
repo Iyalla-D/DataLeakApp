@@ -1,5 +1,6 @@
 import 'package:data_leak/screens/home/data_entry.dart';
 import 'package:data_leak/screens/home/data_list.dart';
+import 'package:data_leak/screens/home/settings.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:flutter/material.dart';
@@ -111,9 +112,13 @@ class HomePageState extends State<HomePage> {
               const SizedBox(height: 450),
               const Divider(),
               ListTile(
-                title: const Text('Sign Out'),
-                onTap: ()async{
-                await _auth.signOut();
+                leading: const Icon(Icons.settings),
+                title: const Text('Settings'),
+                onTap: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsPage()),
+                  );
                 },
               ),
             ],

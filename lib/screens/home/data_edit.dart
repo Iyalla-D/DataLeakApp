@@ -1,5 +1,6 @@
 import 'package:data_leak/models/data.dart';
 import 'package:data_leak/mutual/loading.dart';
+import 'package:data_leak/screens/home/generate_pass_settings.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
@@ -30,15 +31,21 @@ class DataEditPageState extends State<DataEditPage> {
   final useruid = AuthService().useruid;
 
   bool isPwned = false;
-  String encryptedPassword = "null";
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.data.name;
     _urlController.text = widget.data.url;
-    _emailController.text = widget.data.email;
+    _getDecryptedEmail();
     _getDecryptedPassword();
+  }
+
+  Future<void> _getDecryptedEmail() async {
+    String decryptedEmail = await PasswordApiService().decryptApiCall(widget.data.email);
+    setState(() {
+      _emailController.text = decryptedEmail;
+    });
   }
 
   Future<void> _getDecryptedPassword() async {
@@ -48,14 +55,23 @@ class DataEditPageState extends State<DataEditPage> {
     });
   }
 
+  Future<void> _generatePassword(int passwordLength) async {
+    String newPassword = await PasswordApiService().generatePassword(passwordLength);
+    print(newPassword);
+    setState(() {
+      _passwordController.text = newPassword;
+    });
+  }
+
   Future<void> _updateData() async {
-    encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
+    String encryptedEmail = await PasswordApiService().encryptApiCall(_emailController.text);
+    String encryptedPassword = await PasswordApiService().encryptApiCall(_passwordController.text);
     isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
     
     final updatedData = Data(
       name: _nameController.text,
       url: _urlController.text,
-      email: _emailController.text,
+      email: encryptedEmail,
       password: encryptedPassword,
       isLeaked: isPwned,
     );
@@ -74,6 +90,31 @@ class DataEditPageState extends State<DataEditPage> {
     return loading ? Loading(): Scaffold(
       appBar: AppBar(
         title: const Text('Edit Data'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              int? newPasswordLength = await showModalBottomSheet<int>(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                    child: const GeneratePasswordSettings(),
+                  );
+                },
+              );
+
+              if (newPasswordLength != null) {
+                _generatePassword(newPasswordLength);
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Generate Password'),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -82,18 +123,6 @@ class DataEditPageState extends State<DataEditPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nameController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter a name for the data';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                ),
-              ),
               TextFormField(
                 controller: _urlController,
                 validator: (value) {

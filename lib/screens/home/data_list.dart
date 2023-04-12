@@ -4,8 +4,6 @@ import 'package:data_leak/screens/home/delete_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
-
 class DataList extends StatefulWidget{
   final String searchQuery;
   
@@ -42,8 +40,9 @@ class _DataListState extends State<DataList>{
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DataDetailPage(data: (filteredData as List<Data>)[index])),
+                  MaterialPageRoute(builder: (context) => DataDetailPage(initialData: (filteredData as List<Data>)[index])),
                 );
+
               },
               onLongPress: (){
                   showDialog(
