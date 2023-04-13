@@ -1,3 +1,4 @@
+import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/local_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
@@ -13,9 +14,10 @@ class FingerprintAuthPage extends StatefulWidget {
 
 class _FingerprintAuthPageState extends State<FingerprintAuthPage> {
   bool isAuthenticated = false;
+  final AuthService _auth = AuthService();
   final LocalAuthentication auth = LocalAuthentication();
   bool isFirstAttempt = true;
-  bool loading = false;
+  bool loading = true;
 
   @override
   void initState() {
@@ -26,7 +28,7 @@ class _FingerprintAuthPageState extends State<FingerprintAuthPage> {
         widget.onAuthenticated();
       } else {
         setState(() {
-          isFirstAttempt = false;
+          loading = false;
         });
       }
     });
@@ -60,6 +62,16 @@ class _FingerprintAuthPageState extends State<FingerprintAuthPage> {
                         },
                         child: const Text("Try again"),
                       ),
+                      ElevatedButton( 
+                        onPressed: () async {
+                          await _auth.signOut();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                        ),
+                        child: const Text("Log out"),
+                      ),
+
                     ],
                   )
                 : const CircularProgressIndicator(),
