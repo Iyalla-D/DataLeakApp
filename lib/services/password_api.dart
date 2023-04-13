@@ -1,14 +1,28 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PasswordApiService{
   final encryptApiUrl = 'https://dataleak-api.herokuapp.com/encrypt';
   final decryptApiUrl = 'https://dataleak-api.herokuapp.com/decrypt';
   final pwndPassCheckUrl = 'https://dataleak-api.herokuapp.com/ispasswordpwned';
   final newPassword = 'https://dataleak-api.herokuapp.com/newPass';
+  final storage = const FlutterSecureStorage();
+
+  Future<String?> getMasterPassword() async {
+    String? masterPassword = await storage.read(key: 'master_password');
+    return masterPassword;
+  }
+
 
   Future<String> encryptApiCall(String password) async {
+    String? masterPassword = await getMasterPassword();
+    if (masterPassword == null) {
+      masterPassword = await generatePassword(10);
+      await storage.write(key: 'master_password', value: masterPassword);
+    }
+
     String encryptedPassword = "null";
     try{
       final response = await http.post(
@@ -19,7 +33,7 @@ class PasswordApiService{
         },
         body: jsonEncode(<String, String>{
           'Obj': password,
-          'master': 'my_master_password',
+          'master': masterPassword ,
         }),
       );
 
@@ -45,6 +59,12 @@ class PasswordApiService{
   }
 
   Future<String> decryptApiCall(String password) async {
+    String? masterPassword = await getMasterPassword();
+    
+    if (masterPassword == null) {
+      masterPassword = await generatePassword(10);
+      await storage.write(key: 'master_password', value: masterPassword);
+    }
     try{
       final response = await http.post(
         Uri.parse(decryptApiUrl),
@@ -54,7 +74,7 @@ class PasswordApiService{
         },
         body: jsonEncode(<String, String>{
           'Obj': password,
-          'master': 'my_master_password',
+          'master': masterPassword ,
         }),
       );
 
@@ -77,6 +97,11 @@ class PasswordApiService{
   }
 
   Future<bool> pwndChecker(String password) async {
+    String? masterPassword = await getMasterPassword();
+    if (masterPassword == null) {
+      masterPassword = await generatePassword(10);
+      await storage.write(key: 'master_password', value: masterPassword);
+    }
     try{
       final response = await http.post(
         Uri.parse(pwndPassCheckUrl),
@@ -86,7 +111,7 @@ class PasswordApiService{
         },
         body: jsonEncode(<String, String>{
           'Obj': password,
-          'master': 'my_master_password',
+          'master': masterPassword ,
         }),
       );
 
