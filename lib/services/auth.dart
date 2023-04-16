@@ -4,7 +4,7 @@ import 'package:data_leak/models/user.dart';
 
 class AuthService{
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final useruid = FirebaseAuth.instance.currentUser!.uid;
+  final useruid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   UserObj _userFromFirebaseUser(User? user){
     return user != null ? UserObj(uid: user.uid) : UserObj(uid: ' ');

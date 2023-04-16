@@ -1,6 +1,7 @@
 import 'package:data_leak/screens/home/data_entry.dart';
 import 'package:data_leak/screens/home/data_list.dart';
 import 'package:data_leak/screens/home/settings.dart';
+import 'package:data_leak/screens/manual_check_page.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:flutter/material.dart';
@@ -104,9 +105,14 @@ class HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                title: const Text('Item 2'),
+                title: const Text('Check Pawned'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CheckPwnedPage(data: savedData,onDataUpdate: _getDataForCurrentUser,),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 450),
@@ -117,9 +123,12 @@ class HomePageState extends State<HomePage> {
                 onTap: () async {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
+                    MaterialPageRoute(
+                      builder: (context) => SettingsPage(data: savedData,onDataUpdate: _getDataForCurrentUser,),
+                    ),
                   );
                 },
+
               ),
             ],
           ),

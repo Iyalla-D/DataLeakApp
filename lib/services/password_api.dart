@@ -16,12 +16,16 @@ class PasswordApiService{
   }
 
 
-  Future<String> encryptApiCall(String password) async {
+  Future<String> encryptApiCall(String obj, [String? newMasterPassword]) async {
     String? masterPassword = await getMasterPassword();
     if (masterPassword == null) {
       masterPassword = await generatePassword(10);
       await storage.write(key: 'master_password', value: masterPassword);
     }
+
+    // Use newMasterPassword if it's not null, otherwise use masterPassword
+    String master = newMasterPassword ?? masterPassword;
+    print(master);
 
     String encryptedPassword = "null";
     try{
@@ -32,8 +36,8 @@ class PasswordApiService{
           'Accept': 'application/json',
         },
         body: jsonEncode(<String, String>{
-          'Obj': password,
-          'master': masterPassword ,
+          'Obj': obj,
+          'master': master ,
         }),
       );
 
@@ -58,7 +62,7 @@ class PasswordApiService{
     return "";
   }
 
-  Future<String> decryptApiCall(String password) async {
+  Future<String> decryptApiCall(String obj) async {
     String? masterPassword = await getMasterPassword();
     
     if (masterPassword == null) {
@@ -73,7 +77,7 @@ class PasswordApiService{
           'Accept': 'application/json',
         },
         body: jsonEncode(<String, String>{
-          'Obj': password,
+          'Obj': obj,
           'master': masterPassword ,
         }),
       );

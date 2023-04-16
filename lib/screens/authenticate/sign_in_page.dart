@@ -27,7 +27,7 @@ class _SignInPageState extends State<SignInPage> {
       body: Container(
         width: size.width,
         height: size.height,
-        color: Colors.white,
+        color: Colors.red,
         child: Padding(
           padding: const EdgeInsets.only(
                 left: 16.0, right: 16.0, top: 50.0, bottom: 25.0),
