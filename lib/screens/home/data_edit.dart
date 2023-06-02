@@ -69,6 +69,7 @@ class DataEditPageState extends State<DataEditPage> {
     isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
     
     final updatedData = Data(
+      id: widget.data.id,
       name: _nameController.text,
       url: _urlController.text,
       email: encryptedEmail,

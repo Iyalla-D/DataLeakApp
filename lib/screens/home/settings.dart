@@ -30,33 +30,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return masterPassDialog(context, passwordController, oldMasterPassword ?? '', data);
   }
 
-  Future<void> reEncryptData(List<Data> dataList, String oldMasterPassword, String newMasterPassword) async {
-    final passwordApiService = PasswordApiService();
-
-    for (Data data in dataList) {
-      print(data.name);
-      // Decrypt email and password with the old master password
-      String decryptedEmail = await passwordApiService.decryptApiCall(data.email);
-      String decryptedPassword = await passwordApiService.decryptApiCall(data.password);
-
-      // Encrypt email and password with the new master password
-      String encryptedEmail = await passwordApiService.encryptApiCall(decryptedEmail, newMasterPassword);
-      String encryptedPassword = await passwordApiService.encryptApiCall(decryptedPassword, newMasterPassword);
-
-      // Update the data object with the newly encrypted email and password
-      final updatedData = Data(
-        name: data.name,
-        url: data.url,
-        email: encryptedEmail,
-        password: encryptedPassword,
-        isLeaked: data.isLeaked,
-      );
-
-      // Save the updated data object to the database
-      await DatabaseService(uid: useruid).updateData(updatedData);
-    }
-  }
-
   Future<void> masterPassDialog(BuildContext context, TextEditingController passwordController, String oldMasterPassword, List<Data>? dataList) {
     String? errorMessage;
 
@@ -129,6 +102,36 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
+  
+  Future<void> reEncryptData(List<Data> dataList, String oldMasterPassword, String newMasterPassword) async {
+    final passwordApiService = PasswordApiService();
+
+    for (Data data in dataList) {
+      print(data.name);
+      // Decrypt email and password with the old master password
+      String decryptedEmail = await passwordApiService.decryptApiCall(data.email);
+      String decryptedPassword = await passwordApiService.decryptApiCall(data.password);
+
+      // Encrypt email and password with the new master password
+      String encryptedEmail = await passwordApiService.encryptApiCall(decryptedEmail, newMasterPassword);
+      String encryptedPassword = await passwordApiService.encryptApiCall(decryptedPassword, newMasterPassword);
+
+      // Update the data object with the newly encrypted email and password
+      final updatedData = Data(
+        id: data.id,
+        name: data.name,
+        url: data.url,
+        email: encryptedEmail,
+        password: encryptedPassword,
+        isLeaked: data.isLeaked,
+      );
+
+      // Save the updated data object to the database
+      await DatabaseService(uid: useruid).updateData(updatedData);
+    }
+  }
+
+  
 
 
 

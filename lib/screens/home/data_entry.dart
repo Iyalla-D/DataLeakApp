@@ -4,6 +4,7 @@ import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
 import 'package:flutter/material.dart';
 import 'package:data_leak/models/data.dart';
+import 'package:uuid/uuid.dart';
 
 class DataEntryPage extends StatefulWidget {
   const DataEntryPage({super.key});
@@ -35,12 +36,13 @@ class DataEntryPageState extends State<DataEntryPage> {
     isPwned = await PasswordApiService().pwndChecker(encryptedPassword);
 
     final finalData = Data(
-        name: _nameController.text,
-        url: _urlController.text,
-        email: encryptedemail,
-        password: encryptedPassword,
-        isLeaked: isPwned,
-      );
+      id: const Uuid().v4(),
+      name: _nameController.text,
+      url: _urlController.text,
+      email: encryptedemail,
+      password: encryptedPassword,
+      isLeaked: isPwned,
+    );
 
     try {
       await DatabaseService(uid: useruid).addData(finalData);

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_leak/models/data.dart';
 
 
+
 class DatabaseService{
 
   final String uid;
@@ -16,6 +17,7 @@ class DatabaseService{
   Future addData(Data data) async {
     return await dataCollection.doc(uid).collection('user_data') // sub-collection 'user_data' within the user's document
     .doc().set({
+      'id': data.id,
       'name': data.name,
       'url': data.url,
       'email': data.email,
@@ -28,10 +30,11 @@ class DatabaseService{
   Future updateData(Data data) async {
     final thisdataCollection = dataCollection.doc(uid).collection('user_data');
     final querySnapshot = await thisdataCollection
-                  .where('name', isEqualTo: data.name)
+                  .where('id', isEqualTo: data.id)
                   .get();
     final docSnapshot = querySnapshot.docs.first;
     return await docSnapshot.reference.update({
+      'id': data.id,
       'name': data.name,
       'url': data.url,
       'email': data.email,
@@ -44,6 +47,7 @@ class DatabaseService{
    return await dataCollection.doc(uid).collection('user_data') // sub-collection 'user_data' within the user's document
     .doc() // generate a new ID for the data
     .set({
+      'id': "1",
       'name': name,
       'url': url,
       'email': email,
@@ -55,6 +59,7 @@ class DatabaseService{
   List<Data> _dataListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       return Data(
+        id: (doc.data() as dynamic)['id'] ?? '',
         name: (doc.data() as dynamic)['name'] ?? '',
         url: (doc.data() as dynamic)['url'] ?? '',
         email: (doc.data() as dynamic)['email'] ?? '',

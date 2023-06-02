@@ -1,13 +1,79 @@
+import 'dart:convert';
+
 import 'package:data_leak/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:data_leak/screens/wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:data_leak/models/user.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:data_leak/services/password_api.dart';
+import 'package:data_leak/models/userdata.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputdata) async {
+    const storage = FlutterSecureStorage();
+
+    // Retrieve and decode user data list
+    String? jsonUserDataList = await storage.read(key: 'userDataList');
+    if (jsonUserDataList != null) {
+      List<UserData> userDataList = (jsonDecode(jsonUserDataList) as List)
+          .map((jsonUserData) => UserData.fromJson(jsonUserData))
+          .toList();
+
+      // Loop through each user data
+      for (var userData in userDataList) {
+        bool foundLeak =
+            await PasswordApiService().findLeakCall(userData.email, userData.password);
+        if (foundLeak) {
+          showNotification();
+          break;
+        }
+      }
+    }
+
+    // Return true when the task executed successfully or not
+    return Future.value(true);
+  });
+}
+
+void showNotification() async {
+  var android = const AndroidNotificationDetails(
+      'id', 'channel ', 
+      priority: Priority.high, importance: Importance.max);
+  
+  var platform = NotificationDetails(android: android);
+  await flutterLocalNotificationsPlugin.show(
+      0, 'Data leak detected', 'Your data has been leaked', platform,
+      payload: 'Welcome to your data leakage system');
+}
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  //await AndroidAlarmManager.initialize();
+
+  Workmanager().initialize(callbackDispatcher);
+  Workmanager().registerPeriodicTask(
+      "2",
+      "checkForLeaks",
+      frequency: const Duration(hours: 1),
+  );
+  
+  // Notification plugin initialization
+  var initializationSettingsAndroid =
+      const AndroidInitializationSettings('@mipmap/ic_launcher');
+  
+  var initSetttings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      );
+
+  await flutterLocalNotificationsPlugin.initialize(initSetttings);
   runApp(MainApp());
   
 }

@@ -98,12 +98,7 @@ class HomePageState extends State<HomePage> {
                   // ),
                 ), accountName: null,
               ),
-              ListTile(
-                title: const Text('Item 1'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
+              
               ListTile(
                 title: const Text('Check Pawned'),
                 onTap: () {

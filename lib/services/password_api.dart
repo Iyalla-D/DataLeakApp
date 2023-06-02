@@ -4,10 +4,17 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PasswordApiService{
-  final encryptApiUrl = 'https://dataleak-api.herokuapp.com/encrypt';
-  final decryptApiUrl = 'https://dataleak-api.herokuapp.com/decrypt';
-  final pwndPassCheckUrl = 'https://dataleak-api.herokuapp.com/ispasswordpwned';
-  final newPassword = 'https://dataleak-api.herokuapp.com/newPass';
+  // final encryptApiUrl = 'https://dataleak-api.herokuapp.com/encrypt';
+  // final decryptApiUrl = 'https://dataleak-api.herokuapp.com/decrypt';
+  // final pwndPassCheckUrl = 'https://dataleak-api.herokuapp.com/ispasswordpwned';
+  // final newPassword = 'https://dataleak-api.herokuapp.com/newPass';
+
+  final encryptApiUrl = 'http://192.168.89.100:8080/encrypt';
+  final decryptApiUrl = 'http://192.168.89.100:8080/decrypt';
+  final pwndPassCheckUrl = 'http://192.168.89.100:8080/ispasswordpwned';
+  final newPassword = 'http://192.168.89.100:8080/newPass';
+  final findLeakUrl = 'http://192.168.89.100:8080/find-leaked-data';
+
   final storage = const FlutterSecureStorage();
 
   Future<String?> getMasterPassword() async {
@@ -139,7 +146,7 @@ class PasswordApiService{
 
 
 Future<String> generatePassword(int length) async {
-    String generatedPassword = "null";
+  String generatedPassword = "null";
     try{
       final response = await http.get(
         Uri.parse('$newPassword?length=$length'),
@@ -167,9 +174,46 @@ Future<String> generatePassword(int length) async {
         return "";
       }
     }
-    return "";
-  }
+  return "";
+}
 
+Future<bool> findLeakCall(String email,String password) async {
+    String? masterPassword = await getMasterPassword();
+    
+    if (masterPassword == null) {
+      masterPassword = await generatePassword(10);
+      await storage.write(key: 'master_password', value: masterPassword);
+    }
+    try{
+      final response = await http.post(
+        Uri.parse(findLeakUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'email': email,
+          'masspass': masterPassword,
+          'pass': password,
+        }),
+      );
+
+      if(response.statusCode == 200){
+        return response.body.toLowerCase() == 'true';
+      }
+
+    }catch (e) {
+      if (e is SocketException) {
+        // Handle the case where the server is not available
+        print('Server is not available: $e');
+      } 
+      else {
+        // Handle other exceptions
+        print('Error occurred: $e');
+      }
+    }
+    return false;
+  }
 
 
 }

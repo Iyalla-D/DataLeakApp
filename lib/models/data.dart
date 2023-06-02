@@ -1,4 +1,5 @@
 class Data {
+  final String id;
   final String name;
   final String url;
   final String email;
@@ -6,10 +7,11 @@ class Data {
   final bool isLeaked;
   
 
-  Data({required this.name, required this.url,required this.email, required this.password,  required this.isLeaked});
+  Data({required this.id,required this.name, required this.url,required this.email, required this.password,  required this.isLeaked});
 
   factory Data.fromJson(Map<String, dynamic> json) {
     return Data(
+      id: json['id'],
       name: json['name'],
       url: json['url'],
       email: json['email'],
@@ -20,6 +22,7 @@ class Data {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'url': url,
       'email': email,

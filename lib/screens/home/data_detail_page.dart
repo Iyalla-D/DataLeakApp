@@ -47,12 +47,14 @@ class _DataDetailPageState extends State<DataDetailPage> {
   Future<String> _getPassword() async {
     String encryptedPassword = data.password;
     String decryptedPassword = await PasswordApiService().decryptApiCall(encryptedPassword);
+    print("Password: "+decryptedPassword);
     return decryptedPassword;
   }
 
   Future<String> _getEmail() async {
     String encryptedEmail = data.email;
     String decryptedEmail = await PasswordApiService().decryptApiCall(encryptedEmail);
+    print("Email: "+decryptedEmail);
     return decryptedEmail;
   }
 
@@ -85,6 +87,7 @@ class _DataDetailPageState extends State<DataDetailPage> {
                 FutureBuilder<String>(
                   future: _getEmail(),
                   builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                    
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator(); // Show a loading indicator while waiting for the email
                     } else if (snapshot.hasError) {
@@ -107,6 +110,7 @@ class _DataDetailPageState extends State<DataDetailPage> {
                   },
                 ),
                 Text('Data Leaked: ${data.isLeaked ? 'Yes' : 'No'}'),
+                
               ],
             ),
           ),
