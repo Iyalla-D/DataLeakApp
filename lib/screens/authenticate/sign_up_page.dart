@@ -1,8 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print, prefer_interpolation_to_compose_strings, use_build_context_synchronously
+
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -19,7 +23,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    return loading ? Loading():  Scaffold(
+    return loading ? const Loading():  Scaffold(
       resizeToAvoidBottomInset : false,
       body: Container(
         width: size.width,
@@ -104,7 +108,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         loading = true;
                       });
                       dynamic result = await _auth.signUpWithEmailAndPassword(_emailController.text, _passwordController.text);
-                      print(result);
+                      print("result"+result);
                       if(result!=null){
                         Navigator.of(context).pop();
                       }

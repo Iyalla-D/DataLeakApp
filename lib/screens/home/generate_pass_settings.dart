@@ -1,11 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
 class GeneratePasswordSettings extends StatefulWidget {
   const GeneratePasswordSettings({Key? key}) : super(key: key);
 
   @override
-  _GeneratePasswordSettingsState createState() =>
-      _GeneratePasswordSettingsState();
+  _GeneratePasswordSettingsState createState() => _GeneratePasswordSettingsState();
 }
 
 class _GeneratePasswordSettingsState extends State<GeneratePasswordSettings> {
@@ -19,7 +20,7 @@ class _GeneratePasswordSettingsState extends State<GeneratePasswordSettings> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Password Settings',
+            'Generate Password',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),

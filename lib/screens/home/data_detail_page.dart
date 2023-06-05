@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/screens/home/data_edit.dart';
 import 'package:data_leak/services/auth.dart';
@@ -10,7 +12,7 @@ import 'package:data_leak/services/database.dart';
 class DataDetailPage extends StatefulWidget {
   final Data initialData;
 
-  DataDetailPage({required this.initialData});
+  const DataDetailPage({super.key, required this.initialData});
 
   @override
   _DataDetailPageState createState() => _DataDetailPageState();
@@ -47,74 +49,114 @@ class _DataDetailPageState extends State<DataDetailPage> {
   Future<String> _getPassword() async {
     String encryptedPassword = data.password;
     String decryptedPassword = await PasswordApiService().decryptApiCall(encryptedPassword);
-    print("Password: "+decryptedPassword);
     return decryptedPassword;
   }
 
   Future<String> _getEmail() async {
     String encryptedEmail = data.email;
     String decryptedEmail = await PasswordApiService().decryptApiCall(encryptedEmail);
-    print("Email: "+decryptedEmail);
     return decryptedEmail;
   }
 
   @override
   Widget build(BuildContext context) {
-    return loading ? Loading() : StreamProvider<List<Data>?>.value(
-      value: DatabaseService(uid: useruid).userDataStream,
-      initialData: null,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(data.name),
-            actions: [
-                TextButton(
-                  onPressed: ()async{
-                    _editData(context);
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
+    return loading
+        ? const Loading()
+        : StreamProvider<List<Data>?>.value(
+            value: DatabaseService(uid: useruid).userDataStream,
+            initialData: null,
+            child: Scaffold(
+              appBar: AppBar(
+                actions: const [
+                  
+                ],
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: ListView(
+                    children: [
+                      
+                      Text(
+                        data.name,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.secondary), 
+                      ),
+                      
+                      ListTile(
+                        leading: Icon(Icons.link, color: Theme.of(context).primaryColor),
+                        title: Text(data.url),
+                        subtitle: const Text('URL'),
+                      ),
+                      FutureBuilder<String>(
+                        future: _getEmail(),
+                        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const ListTile(
+                              leading: CircularProgressIndicator(),
+                              title: Text('Loading...'),
+                            );
+                          } else if (snapshot.hasError) {
+                            return ListTile(
+                              leading: const Icon(Icons.error, color: Colors.red),
+                              title: Text('Error: ${snapshot.error}'),
+                            );
+                          } else {
+                            return ListTile(
+                              leading: Icon(Icons.email, color: Theme.of(context).primaryColor),
+                              title: Text('${snapshot.data}'),
+                              subtitle: const Text('Email'),
+                            );
+                          }
+                        },
+                      ),
+                      FutureBuilder<String>(
+                        future: _getPassword(),
+                        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const ListTile(
+                              leading: CircularProgressIndicator(),
+                              title: Text('Loading...'),
+                            );
+                          } else if (snapshot.hasError) {
+                            return ListTile(
+                              leading: const Icon(Icons.error, color: Colors.red),
+                              title: Text('Error: ${snapshot.error}'),
+                            );
+                          } else {
+                            return ListTile(
+                              leading: Icon(Icons.vpn_key, color: Theme.of(context).primaryColor),
+                              title: Text('${snapshot.data}'),
+                              subtitle: const Text('Password'),
+                            );
+                          }
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(data.isLeaked ? Icons.warning : Icons.check_circle, color: data.isLeaked ? Colors.red : Colors.green),
+                        title: Text(data.isLeaked ? 'Yes' : 'No'),
+                        subtitle: const Text('Data Leaked'),
+                      ),
+
+
+
+                      TextButton(
+                        onPressed: () async {
+                          _editData(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ), backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white
+                        ),
+                        child: const Text('Edit'),
+                      ),
+                    ],
                   ),
-                  child: const Text('Edit'),
                 ),
-              ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Url: ${data.url}'),
-                FutureBuilder<String>(
-                  future: _getEmail(),
-                  builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator(); // Show a loading indicator while waiting for the email
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}'); // Show the error if any occurred
-                    } else {
-                      return Text('Email: ${snapshot.data}'); // Show the password when it's available
-                    }
-                  },
-                ),
-                FutureBuilder<String>(
-                  future: _getPassword(),
-                  builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator(); // Show a loading indicator while waiting for the password
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}'); // Show the error if any occurred
-                    } else {
-                      return Text('Password: ${snapshot.data}'); // Show the password when it's available
-                    }
-                  },
-                ),
-                Text('Data Leaked: ${data.isLeaked ? 'Yes' : 'No'}'),
-                
-              ],
+              ),
             ),
-          ),
-        )
-    );
+          );
   }
 }

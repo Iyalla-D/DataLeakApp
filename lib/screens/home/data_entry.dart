@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/database.dart';
@@ -20,14 +22,11 @@ class DataEntryPageState extends State<DataEntryPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  //String Domain = "";
   bool loading = false;
-
   final useruid = AuthService().useruid;
-
   bool isPwned = false;
+  bool _passwordVisible = false;
  
-
   Future<void> _addNewData() async {
     String encryptedemail = await PasswordApiService().encryptApiCall(_emailController.text);
     print(encryptedemail);
@@ -46,7 +45,6 @@ class DataEntryPageState extends State<DataEntryPage> {
 
     try {
       await DatabaseService(uid: useruid).addData(finalData);
-      // ignore: use_build_context_synchronously
       Navigator.pop(context, finalData);
     } catch (e) {
       print('Error adding data to Firestore: $e');
@@ -64,85 +62,135 @@ class DataEntryPageState extends State<DataEntryPage> {
   return domainName;
 }
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return loading ? Loading(): Scaffold(
-      appBar: AppBar(
-        title: const Text('Add New Data'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              
-              TextFormField(
-                controller: _urlController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter a url for the data';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Url',
-                ),
-                onChanged: (value) {
-                  _nameController.text = extractNameFromUrl(_urlController.text);
-                  print(_nameController.text);
-                },
-              ),
-              TextFormField(
-                controller: _emailController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter your email address';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                ),
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () async{
-                  if (_formKey.currentState?.validate() ?? false) {
-                    setState(() {
-                        loading = true;
-                      });
-
-                    await _addNewData();
-                    
-                    setState(() {
-                        loading = false;
-                      });
-                  }
-                  else{
-                    print("error validating form: data entry");
-                  }
-                },
-                child: const Text('Submit'),
-              ),
-            ],
+    return loading
+      ? const Loading()
+      : Scaffold(
+          appBar: AppBar(
+           
           ),
+          body: SafeArea( 
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Add New Data',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Theme.of(context).colorScheme.secondary), 
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildTextField(
+                          controller: _urlController,
+                          labelText: 'Url',
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return 'Please enter a url for the data';
+                            }
+                            return null;
+                          },
+                          prefixIcon: Icons.web,
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildTextField(
+                          controller: _emailController,
+                          labelText: 'Email',
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return 'Please enter your email address';
+                            }
+                            return null;
+                          },
+                          prefixIcon: Icons.email,
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildPasswordField(),
+                        const SizedBox(height: 32.0),
+                        _buildSubmitButton(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String? Function(String?) validator,
+    IconData? prefixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.primary) : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
         ),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return Stack(
+      alignment: Alignment.centerRight,
+      children: [
+        _buildTextField(
+          controller: _passwordController,
+          labelText: 'Password',
+          validator: (value) {
+            if (value?.isEmpty ?? true) {
+              return 'Please enter your password';
+            }
+            return null;
+          },
+          prefixIcon: Icons.lock,
+        ),
+        IconButton(
+          icon: Icon(
+            _passwordVisible ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _passwordVisible = !_passwordVisible;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return ElevatedButton(
+      onPressed: () async{
+        if (_formKey.currentState?.validate() ?? false) {
+          setState(() {
+              loading = true;
+          });
+
+          await _addNewData();
+
+          setState(() {
+              loading = false;
+          });
+        } else {
+          print('Error validating form: data entry');
+        }
+      },
+      child: const Text('Submit'),
     );
   }
 }

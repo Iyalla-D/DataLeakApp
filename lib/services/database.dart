@@ -26,6 +26,16 @@ class DatabaseService{
     });
     
   }   
+  Future markAsLeaked(String id) async {
+    final thisdataCollection = dataCollection.doc(uid).collection('user_data');
+    final querySnapshot = await thisdataCollection
+                  .where('id', isEqualTo: id)
+                  .get();
+    final docSnapshot = querySnapshot.docs.first;
+    return await docSnapshot.reference.update({
+      'isLeaked': true,
+    });           
+  }
 
   Future updateData(Data data) async {
     final thisdataCollection = dataCollection.doc(uid).collection('user_data');

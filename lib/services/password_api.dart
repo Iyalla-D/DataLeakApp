@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -9,11 +11,11 @@ class PasswordApiService{
   // final pwndPassCheckUrl = 'https://dataleak-api.herokuapp.com/ispasswordpwned';
   // final newPassword = 'https://dataleak-api.herokuapp.com/newPass';
 
-  final encryptApiUrl = 'http://192.168.89.100:8080/encrypt';
-  final decryptApiUrl = 'http://192.168.89.100:8080/decrypt';
-  final pwndPassCheckUrl = 'http://192.168.89.100:8080/ispasswordpwned';
-  final newPassword = 'http://192.168.89.100:8080/newPass';
-  final findLeakUrl = 'http://192.168.89.100:8080/find-leaked-data';
+  final encryptApiUrl = 'http://192.168.177.100:8080/encrypt';
+  final decryptApiUrl = 'http://192.168.177.100:8080/decrypt';
+  final pwndPassCheckUrl = 'http://192.168.177.100:8080/ispasswordpwned';
+  final newPassword = 'http://192.168.177.100:8080/newPass';
+  final findLeakUrl = 'http://192.168.177.100:8080/find-leaked-data';
 
   final storage = const FlutterSecureStorage();
 
@@ -206,10 +208,12 @@ Future<bool> findLeakCall(String email,String password) async {
       if (e is SocketException) {
         // Handle the case where the server is not available
         print('Server is not available: $e');
+        throw Exception('Server is not available');
       } 
       else {
         // Handle other exceptions
         print('Error occurred: $e');
+        throw Exception('Error occurred');
       }
     }
     return false;

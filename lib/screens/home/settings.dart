@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+
 import 'package:data_leak/models/data.dart';
 import 'package:data_leak/services/database.dart';
 import 'package:data_leak/services/password_api.dart';
@@ -9,7 +11,7 @@ class SettingsPage extends StatefulWidget {
   final List<Data>? data;
   final VoidCallback? onDataUpdate;
 
-  SettingsPage({this.data, this.onDataUpdate});
+  const SettingsPage({super.key, this.data, this.onDataUpdate});
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -26,7 +28,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final data = widget.data;
 
-    // ignore: use_build_context_synchronously
     return masterPassDialog(context, passwordController, oldMasterPassword ?? '', data);
   }
 

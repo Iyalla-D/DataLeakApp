@@ -10,18 +10,26 @@ import 'package:data_leak/models/data.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   HomePageState createState() => HomePageState();
 }
 
 class HomePageState extends State<HomePage> {
-  final AuthService _auth = AuthService();
   List<Data> savedData = [];
   final useruid = AuthService().useruid;
   String searchQuery = '';
+  bool isGridView = true;
   bool showSearchBar = false;
   final searchController = TextEditingController();
 
+
+  void toggleGridView() {  
+    setState(() {
+      isGridView = !isGridView;
+    });
+  }
 
   void _getDataForCurrentUser() async {
     final snapshot = await DatabaseService(uid: useruid).getSnapshot();
@@ -74,7 +82,7 @@ class HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        body: DataList(searchQuery: searchQuery),
+        body: DataList(searchQuery: searchQuery, isGridView: isGridView),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -90,22 +98,29 @@ class HomePageState extends State<HomePage> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               UserAccountsDrawerHeader(
-                //accountName: Text(FirebaseAuth.instance.currentUser!.displayName!),
                 accountEmail: Text(FirebaseAuth.instance.currentUser!.email!),
                 currentAccountPicture: const CircleAvatar(
-                  // backgroundImage: NetworkImage(
-                  //   FirebaseAuth.instance.currentUser!.photoURL!,
-                  // ),
                 ), accountName: null,
               ),
               
               ListTile(
-                title: const Text('Check Pawned'),
+                leading: const Icon(Icons.view_module),  
+                title: const Text('Toggle View'),
+                onTap: () {
+                  toggleGridView();  
+                  Navigator.pop(context);  
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner), 
+                title: const Text('Scan'),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CheckPwnedPage(data: savedData,onDataUpdate: _getDataForCurrentUser,),
+                      builder: (context) => const CheckPwnedPage(),
+
                     ),
                   );
                 },

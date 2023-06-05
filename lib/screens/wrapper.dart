@@ -1,12 +1,15 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:data_leak/models/user.dart';
 import 'package:data_leak/screens/authenticate/fingerprint_auth_page.dart';
 import 'package:data_leak/screens/home/home.dart';
 import 'package:data_leak/screens/authenticate/sign_in_page.dart';
-import 'package:data_leak/services/local_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Wrapper extends StatefulWidget {
+  const Wrapper({super.key});
+
   @override
   _WrapperState createState() => _WrapperState();
 }
@@ -25,10 +28,10 @@ class _WrapperState extends State<Wrapper> {
     final user = Provider.of<UserObj>(context);
 
     if (user.uid == ' ' || user.uid == 'nothing') {
-      return SignInPage();
+      return const SignInPage();
     } else {
       return isAuthenticated
-          ? HomePage()
+          ? const HomePage()
           : FingerprintAuthPage(onAuthenticated: _handleAuthentication);
     }
   }

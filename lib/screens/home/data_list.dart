@@ -8,11 +8,14 @@ import 'package:provider/provider.dart';
 import 'package:data_leak/models/userdata.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../services/password_api.dart';
+
 
 class DataList extends StatefulWidget{
   final String searchQuery;
+  final bool isGridView;
   
-  DataList({required this.searchQuery});
+  const DataList({super.key, required this.searchQuery, required this.isGridView});
 
   @override
   State<StatefulWidget> createState() => _DataListState();
@@ -36,16 +39,15 @@ class _DataListState extends State<DataList>{
     if (data != null) {
       data.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-      List<UserData> userDataList = data.map((item) => UserData(item.email, item.password)).toList();
+      List<UserData> userDataList = data.map((item) => UserData(item.id, item.email, item.password)).toList();
       saveDataToSecureStorage(userDataList);
     }
-
-    
 
     final filteredData = data
         ?.where((element) => element.name.toLowerCase().contains(widget.searchQuery.toLowerCase()))
         .toList();
-    return GridView.builder(
+    return widget.isGridView ?
+     GridView.builder(
           padding: const EdgeInsets.all(16.0),
           itemCount: filteredData?.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -73,10 +75,8 @@ class _DataListState extends State<DataList>{
                   },
                 );
               },
-              //child image for the gridview builder
               child: imageUrl.isNotEmpty
                 ? ClipRRect(
-                  //ClipOval
                   borderRadius: BorderRadius.circular(25.0),
                   child: Image.network(
                     'https://logo.clearbit.com/https://$imageUrl?size=799',
@@ -87,7 +87,55 @@ class _DataListState extends State<DataList>{
             );
             
           },
+        ): ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: filteredData?.length,
+          itemBuilder: (BuildContext context, int index) {
+            final imageUrl = filteredData != null && filteredData.length > index ? filteredData[index].url : '';
+            return ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DataDetailPage(initialData: (filteredData as List<Data>)[index])),
+                );
+              },
+              onLongPress: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return DeleteDialog(
+                      data: (filteredData as List<Data>)[index],
+                    );
+                  },
+                );
+              },
+              leading: imageUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: Image.network(
+                      'https://logo.clearbit.com/https://$imageUrl?size=799',
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+              title: Text(filteredData?[index].name ?? ''),
+              subtitle: FutureBuilder<String>(
+                future: filteredData?[index].email != null
+                    ? PasswordApiService().decryptApiCall(filteredData![index].email)
+                    : Future.value(''),
+                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(snapshot.data ?? '');
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  return const Text('Loading...');
+                },
+              ),
+            );
+          },
         );
+        
   }
 
 }

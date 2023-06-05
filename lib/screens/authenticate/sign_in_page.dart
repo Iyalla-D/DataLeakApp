@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print
+
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/screens/authenticate/forgot_password.dart';
 import 'package:data_leak/services/auth.dart';
@@ -5,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:data_leak/screens/authenticate/sign_up_page.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
   _SignInPageState createState() => _SignInPageState();
 }
@@ -19,7 +23,7 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    return loading ? Loading(): MediaQuery(
+    return loading ? const Loading(): MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
        
       child: Scaffold(
@@ -27,7 +31,7 @@ class _SignInPageState extends State<SignInPage> {
       body: Container(
         width: size.width,
         height: size.height,
-        color: Colors.red,
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.only(
                 left: 16.0, right: 16.0, top: 50.0, bottom: 25.0),
@@ -103,13 +107,13 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage()));
                   },
                   child: const Text('Don\'t have an account? Sign Up'),
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ForgottenPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ForgottenPage()));
                   },
                   child: const Text('Forgot Password'),
                 ),

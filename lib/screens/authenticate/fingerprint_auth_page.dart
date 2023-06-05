@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:data_leak/services/auth.dart';
 import 'package:data_leak/services/local_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:local_auth/local_auth.dart';
 class FingerprintAuthPage extends StatefulWidget {
   final VoidCallback onAuthenticated;
 
-  FingerprintAuthPage({required this.onAuthenticated});
+  const FingerprintAuthPage({super.key, required this.onAuthenticated});
 
   @override
   _FingerprintAuthPageState createState() => _FingerprintAuthPageState();

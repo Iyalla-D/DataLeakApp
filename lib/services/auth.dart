@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:data_leak/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:data_leak/models/user.dart';

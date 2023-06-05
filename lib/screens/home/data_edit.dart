@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:data_leak/models/data.dart';
 import 'package:data_leak/mutual/loading.dart';
 import 'package:data_leak/screens/home/generate_pass_settings.dart';
@@ -85,121 +87,188 @@ class DataEditPageState extends State<DataEditPage> {
       print('Error updating data in Firestore: $e');
     }
   }
-  
+
   @override
-  Widget build(BuildContext context) {
-    return loading ? Loading(): Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Data'),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              int? newPasswordLength = await showModalBottomSheet<int>(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) {
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom),
-                    child: const GeneratePasswordSettings(),
-                  );
-                },
-              );
-
-              if (newPasswordLength != null) {
-                _generatePassword(newPasswordLength);
-              }
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Generate Password'),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _urlController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter a url for the data';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Url',
+Widget build(BuildContext context) {
+  return loading
+      ? const Loading()
+      : Scaffold(
+          appBar: AppBar(
+            actions: [
+              TextButton(
+                onPressed: _handleGeneratePassword,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
                 ),
-              ),
-              TextFormField(
-                controller: _emailController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter your email address';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                ),
-              ),
-              Stack(
-                alignment: Alignment.centerRight,
-                children: [
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: !_passwordVisible,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _passwordVisible = !_passwordVisible;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () async{
-                  if (_formKey.currentState?.validate() ?? false) {
-                    setState(() {
-                      loading = true;
-                    });
-
-                    await _updateData();
-                    
-                    setState(() {
-                      loading = false;
-                    });
-                  }
-                  else{
-                    print("error validating form: data entry");
-                  }
-                },
-                child: const Text('Submit'),
+                child: const Text('Generate Password'),
               ),
             ],
           ),
+          body: SafeArea( 
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Edit Data',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.secondary), 
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildTextField(
+                          controller: _urlController,
+                          labelText: 'Url',
+                          validator: _validateUrl,
+                          prefixIcon: Icons.web,
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildTextField(
+                          controller: _emailController,
+                          labelText: 'Email',
+                          validator: _validateEmail,
+                          prefixIcon: Icons.email,
+                        ),
+                        const SizedBox(height: 16.0),
+                        _buildPasswordField(),
+                        const SizedBox(height: 32.0),
+                        _buildSubmitButton()
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+}
+
+
+
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String? Function(String?) validator,
+    IconData? prefixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      style: const TextStyle(
+        
+      ),
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.primary) : null,
+        labelStyle: const TextStyle(
+          
+          fontWeight: FontWeight.bold,
         ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
     );
+  }
+
+
+  Widget _buildPasswordField() {
+    return Stack(
+      alignment: Alignment.centerRight,
+      children: [
+        _buildTextField(
+          controller: _passwordController,
+          labelText: 'Password',
+          validator: _validatePassword,
+          prefixIcon: Icons.lock,
+        ),
+        IconButton(
+          icon: Icon(
+            _passwordVisible ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: _togglePasswordVisibility,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return ElevatedButton(
+      onPressed: _handleSubmit,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: const Text('Submit'),
+    );
+  }
+
+  String? _validateUrl(String? value) {
+    if (value?.isEmpty ?? true) {
+      return 'Please enter a url for the data';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value?.isEmpty ?? true) {
+      return 'Please enter your email address';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value?.isEmpty ?? true) {
+      return 'Please enter your password';
+    }
+    return null;
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _passwordVisible = !_passwordVisible;
+    });
+  }
+
+  void _handleSubmit() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        loading = true;
+      });
+
+      await _updateData();
+
+      setState(() {
+        loading = false;
+      });
+    } else {
+      print('Error validating form: data entry');
+    }
+  }
+
+  void _handleGeneratePassword() async {
+    int? newPasswordLength = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: const GeneratePasswordSettings(),
+        );
+      },
+    );
+
+    if (newPasswordLength != null) {
+      _generatePassword(newPasswordLength);
+    }
   }
 }
